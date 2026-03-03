@@ -1,1 +1,14 @@
-will explain after one attempt on autograder
+Average Latency:
+US instance:
+  /register average latency: 58.60 ms
+  /list average latency: 50.10 ms
+
+EU instance:
+  /register average latency: 1170.20 ms
+  /list average latency: 277.20 ms
+
+
+Eventual Consistency:
+Eventual consistency delay observed: 0 / 100
+
+
