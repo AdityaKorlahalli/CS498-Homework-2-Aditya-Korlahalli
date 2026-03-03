@@ -12,3 +12,7 @@ Eventual Consistency:
 Eventual consistency delay observed: 0 / 100
 
 
+The latencies between the US and EU differ because of the distance. Requests to the US are faster because it is closer which means that the EU requests would take a bit longer. Additionally, POST requests to /REGISTER are slower than GET requests to /list as writing data is more time consuming than reading data.
+
+The consistency experiment shows that most new users appear quickly on the other region. Sometimes there can be some delays, but Firestore updates across regions automatically.
+
