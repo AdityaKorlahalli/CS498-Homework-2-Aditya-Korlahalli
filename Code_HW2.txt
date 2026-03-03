@@ -1,1 +1,73 @@
-will explain after one attempt on autograder
+Code:
+
+const axios = require("axios");
+
+const instances = {
+  us: "http://35.188.100.171:8080",
+  eu: "http://35.195.53.159:8080",
+};
+
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+async function measureLatency(endpoint, instance, numRequests = 10) {
+  let totalTime = 0;
+  for (let i = 0; i < numRequests; i++) {
+    const start = Date.now();
+    if (endpoint === "register") {
+      await axios.post(`${instance}/register`, { username: `user-${Date.now()}-${i}` });
+    } else {
+      await axios.get(`${instance}/list`);
+    }
+    const elapsed = Date.now() - start;
+    totalTime += elapsed;
+  }
+  return totalTime / numRequests;
+}
+
+async function testLatency() {
+  console.log("Measuring latency...");
+  for (const [region, url] of Object.entries(instances)) {
+    const registerLatency = await measureLatency("register", url);
+    const listLatency = await measureLatency("list", url);
+    console.log(`${region.toUpperCase()} instance:`);
+    console.log(`  /register average latency: ${registerLatency.toFixed(2)} ms`);
+    console.log(`  /list average latency: ${listLatency.toFixed(2)} ms\n`);
+  }
+}
+
+async function testEventualConsistency(iterations = 100) {
+  console.log("Testing eventual consistency...");
+  let missed = 0;
+  for (let i = 0; i < iterations; i++) {
+    const username = `user-${Date.now()}-${i}`;
+    await axios.post(`${instances.us}/register`, { username });
+    const res = await axios.get(`${instances.eu}/list`);
+    if (!res.data.users.includes(username)) {
+      missed++;
+    }
+    await sleep(20);
+  }
+  console.log(`Out of ${iterations} registrations:`);
+  console.log(`  ${missed} times the username was NOT immediately visible on the EU instance`);
+  console.log(`  Eventual consistency delay observed: ${missed} / ${iterations}`);
+}
+
+async function main() {
+  await testLatency();
+  await testEventualConsistency();
+}
+
+main().catch(console.error);
+
+
+
+
+
+
+
+
+
+Explanation:
+To start, I imported axios so that I could make HTTP requests. Instances will store the URL. I had a measureLatency function. This loops through the number of requests 10 times. For every iteration, it records the start time, sends an HTTP request, measures the time, and adds it to a counter. Then the average latency is returned. TestLatency compares the performance of US vs EU. The last function is Testing Eventual Consistency. This function loops 100 times. In each iteration, it generates a random username, registers it to the US instance, checks it on the EU instance, and keeps a counter of how many times it is not visible in the EU instance.
